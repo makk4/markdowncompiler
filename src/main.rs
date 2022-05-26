@@ -1,4 +1,5 @@
-mod scanner;
+pub mod scanner;
+pub mod htmlout;
 
 use std::io;
 use std::fs::File;
@@ -10,7 +11,9 @@ fn main() -> io::Result<()> {
 
     // read up to 10 bytes
     let _n = f.read_to_end(&mut buffer)?;
-    scanner::scan_token(&buffer);
-    println!("The bytes: {:?}", &buffer);
+    let token_list = scanner::scan_token(&buffer);
+    let output = htmlout::html_out(&token_list);
+    print!("{}", output);
+    // println!("The bytes: {:?}", &buffer);
     Ok(())
 }

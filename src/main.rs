@@ -1,4 +1,5 @@
 pub mod scanner;
+pub mod parser;
 pub mod htmlout;
 
 use std::io;
@@ -11,9 +12,10 @@ fn main() -> io::Result<()> {
 
     // read up to 10 bytes
     let _n = f.read_to_end(&mut buffer)?;
-    let token_list = scanner::scan_token(&buffer);
+    let mut token_list = scanner::scan_token(&buffer);
+    token_list = parser::parse(&token_list);
     let output = htmlout::html_out(&token_list);
     print!("{}", output);
-    // println!("The bytes: {:?}", &buffer);
+    println!("The bytes: {:?}", &buffer);
     Ok(())
 }

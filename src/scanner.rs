@@ -1,6 +1,6 @@
 use std::{collections::LinkedList, fmt};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum TokenType {
     None,
     Heading,
@@ -32,6 +32,7 @@ impl fmt::Display for TokenType {
     }
 }
 
+#[derive(Clone)]
 pub struct Token {
     pub token_type: TokenType,
     pub level: u8,
@@ -41,104 +42,111 @@ pub struct Token {
 pub(crate) fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
     let mut token_list: LinkedList<Token> = LinkedList::new();
     let mut token: TokenType = TokenType::None;
-    let mut level: u8 = 1;
+    let mut level: u8 = 0;
     let mut text: String = "".to_string();
+    let mut header_possible: bool = false;
+    let mut alternative_header_l2_possible: bool = false;
+    let mut alternative_header_l1_possible: bool = false;
 
     buffer.into_iter().for_each(|b| {
         match b {
             35 => {
-                // Heading #
+                // # Possible Heading
                 match token {
                     TokenType::None => {
-                        token = TokenType::Heading;
-                    }
-                    TokenType::Heading => {
+                        header_possible = true;
                         level = level + 1;
                         if level >= 7 {
-                            token = TokenType::Text;
+                            header_possible = false;
                         }
                     }
                     _ => {}
                 }
             }
             61 => {
-                // Alternative Heading level 1 or Text ---
+                // = Possible Alternative Heading level 1
                 match token {
                     TokenType::None => {
-                        token = TokenType::AlternativeHeadingOrText;
+                        alternative_header_l1_possible = true;
+                        alternative_header_l2_possible = false;
                         level = 1;
                         text.push(*b as char);
                     }
-                    TokenType::AlternativeHeadingOrText => {
-                        text.push(*b as char);
-                    }
                     _ => {
-                        token = TokenType::Text;
                         text.push(*b as char);
                     }
                 }
             }
             45 => {
-                // Alternative Heading level 2 or Text ==
+                // - Alternative Heading level 2
                 match token {
                     TokenType::None => {
-                        token = TokenType::AlternativeHeadingOrText;
+                        alternative_header_l2_possible = true;
+                        alternative_header_l1_possible = false;
                         level = 2;
                         text.push(*b as char);
                     }
-                    TokenType::AlternativeHeadingOrText => {
-                        text.push(*b as char);
-                    }
                     _ => {
-                        token = TokenType::Text;
                         text.push(*b as char);
                     }
                 }
             }
-            32 => { // Space
-                //ignore
-            }
-            10 => { // Newline \r
+            32 => {
+                // Space
                 match token {
-                    TokenType::Heading => {
-                        token_list.push_back(Token {
-                            token_type: TokenType::Heading,
-                            level,
-                            text: text.clone(),
-                        });
-                    }
-                    TokenType::AlternativeHeadingOrText => {
-                        token_list.push_back(Token {
-                            token_type: TokenType::AlternativeHeadingOrText,
-                            level,
-                            text: text.clone(),
-                        });
-                    }
-                    TokenType::Text => {
-                        token_list.push_back(Token {
-                            token_type: TokenType::Text,
-                            level,
-                            text: text.clone(),
-                        });
-                    }
                     TokenType::None => {
-                        token_list.push_back(Token {
-                            token_type: TokenType::Paragraph,
-                            level,
-                            text: text.clone(),
-                        });
+                        if header_possible {
+                            token = TokenType::Heading;
+                        }
+                        else if alternative_header_l1_possible || alternative_header_l2_possible {
+                            token = TokenType::AlternativeHeadingOrText;
+                        }
+                        else {
+                            token = TokenType::Paragraph;
+                        }
                     }
                     _ => {}
                 }
-                token = TokenType::None;
-                level = 1;
-                text = "".to_string();
             }
-            _ => {
-                // Text
+            10 => {
+                // Newline \r
+                if header_possible {
+                    token = TokenType::Heading;
+                }
+                else if alternative_header_l1_possible | alternative_header_l2_possible {
+                    token = TokenType::AlternativeHeadingOrText;
+                }
                 match token {
                     TokenType::None => {
-                        token = TokenType::Text;
+                        //
+                    }
+                    _ => {
+                        token_list.push_back(Token {
+                            token_type: token.clone(),
+                            level,
+                            text: text.clone(),
+                        });
+                    }
+                }
+                token = TokenType::None;
+                level = 0;
+                text = "".to_string();
+                header_possible = false;
+                alternative_header_l2_possible = false;
+            }
+            _ => {
+                alternative_header_l2_possible = false;
+
+                if header_possible {
+                    header_possible = false;
+                }
+                // Letters
+                match token {
+                    TokenType::None => {
+                        token = TokenType::Paragraph;
+                        text.push(*b as char);
+                    }
+                    TokenType::Heading => {
                         text.push(*b as char);
                     }
                     _ => {

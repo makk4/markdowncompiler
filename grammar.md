@@ -14,7 +14,7 @@ Body            :=  { Header | Paragraph | List | Code } .
 Header          :=  "#" { "#" } " " Sentence <NEWLINE> | 
                     Sentence <NEWLINE> ( "=" { "=" } | "-" { "-" } ) .
 Paragraph       :=  { ">" } Sentence ( <NEWLINE> | Linebreak ) .
-Sentence        :=  Emphasis | Text .
+Sentence        :=  { Emphasis | Text } .
 Emphasis        :=  Italic | Bold | "***" Text "***" | "___" Text "___" | 
                     "__*" Text "*__" | "**_" Text "_**" .
 Italic          :=  "_" Text "_" | "*" Text "*" .

@@ -1,8 +1,19 @@
 [package]
 name = "markdowncompiler"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+authors = ["manuel klappacher <manuel.kl900@gmail.com>"]
+repository = ""
+description = ""
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "markdowncompiler"
+path = "src/lib.rs"
+
+[[bin]]
+name = "markdowncompiler"
+path = "src/main.rs"
 
 [dependencies]

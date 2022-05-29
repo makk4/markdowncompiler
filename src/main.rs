@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io::Read;
 
 fn main() -> io::Result<()> {
-    let mut f = File::open("test.md")?;
+    let mut f = File::open("tests/test.md")?;
     let mut buffer = Vec::new();
 
     // read up to 10 bytes

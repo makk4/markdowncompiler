@@ -1,7 +1,7 @@
 use std::collections::LinkedList;
 use crate::scanner::{Token, Text};
 
-pub(crate) fn html_out(token_list: &LinkedList<Token>) -> String {
+pub fn html_out(token_list: &LinkedList<Token>) -> String {
     let mut output: String = "".to_string();
 
     token_list.into_iter().for_each(|t| {

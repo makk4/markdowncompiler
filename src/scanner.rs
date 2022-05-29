@@ -54,7 +54,7 @@ pub struct Text {
 }
 
 
-pub(crate) fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
+pub fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
     let mut token_list: LinkedList<Token> = LinkedList::new();
 
     let mut token: TokenType = TokenType::None;

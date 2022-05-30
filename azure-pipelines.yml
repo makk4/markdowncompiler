@@ -6,11 +6,11 @@ trigger:
 
 resources:
   repositories:
-    - repository: rust_pipelines
+    - repository: markdowncompiler
       type: github
-      name: xoac/rust-azure-pipelines
+      name: makk4/markdowncompiler
       ref: refs/tags/v0.1.0
-      endpoint: PipelinesTemplates # TODO YOU NEED TO CHANGE THIS!
+      endpoint: markdownc
 
 stages:
 - stage: check

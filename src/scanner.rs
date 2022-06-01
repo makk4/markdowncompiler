@@ -1,6 +1,6 @@
 use std::{collections::LinkedList, fmt};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
     None,
     Heading,
@@ -10,25 +10,8 @@ pub enum TokenType {
     Code,
     /*
     AlternativeHeadingOrText,
-    Text,
-    Bold,
-    Italic,
-    BoldAndItalic,
-    */
-    
-    
-    /*
-    Space,
-    LineBreak,
-    BoldAndItalic,
     Blockquote,
-    BlockquotesWithMultipleParagraphs,
-    NestedBlockquote,
-    BlockquotesWithOtherElements,
-    EscapingBacktick,
     CodeBlock,
-    Link,
-    Image,
     HTML,
     */
 }
@@ -74,18 +57,14 @@ pub fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
     IntoIterator::into_iter(buffer).for_each(|b| {
         match b {
             10 => {
-                // Newline \r
-                match token {
-                    _ => {
-                        let text = Text {text: text.clone(), bold: false, italic: false};
-                        sentence.push(text);
-                        token_list.push_back(Token {
-                            token_type: token.clone(),
-                            headline_level,
-                            sentence: sentence.clone()
-                        });
-                    }
-                }
+                // \n Newline 
+                sentence.push(Text {text: text.clone(), bold: false, italic: false});
+                token_list.push_back(Token {
+                    token_type: token.clone(),
+                    headline_level,
+                    sentence: sentence.clone()
+                });
+
                 token = TokenType::None;
                 headline_level = 0;
                 text = "".to_string();
@@ -140,20 +119,15 @@ pub fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
             // }
             35 => {
                 // # Possible Heading
-                match token {
-                    TokenType::None => {
-                        text.push(*b as char);
-                        header_possible = true;
+                if TokenType::None == token {
+                    header_possible = true;
 
-                        headline_level = headline_level + 1;
-                        if headline_level >= 7 {
-                            header_possible = false;
-                        }
-                    }
-                    _ => {
-                        text.push(*b as char);
+                    headline_level = headline_level + 1;
+                    if headline_level >= 7 {
+                        header_possible = false;
                     }
                 }
+                text.push(*b as char);
             }
             /*
             40 => {
@@ -164,37 +138,36 @@ pub fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
             }
             */
             42 => {
-                // * Bold / Italics / List possible
-                match token {
-                    TokenType::None => {
-                        unorderedlist_possible = true;
-                        text.push(*b as char);
-                    }
-                    _ => {
-                        text.push(*b as char);
-                    }
-                } 
+                // * List possible / Bold / Italics
+                if TokenType::None == token {
+                    unorderedlist_possible = true;
+                }
+                text.push(*b as char);
             }
-            /*
+            43 => {
+                // + List possible
+                if TokenType::None == token {
+                    unorderedlist_possible = true;
+                }
+                text.push(*b as char);
+            }
             45 => {
-                // - Alternative Heading level 2
+                // - List possible / Alternative Heading level 2
+                if TokenType::None == token {
+                    unorderedlist_possible = true;
+                }
+                text.push(*b as char);
             }
-            */
             46 => {
                 // .
                 text.push(*b as char);
             }
             48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 => {
                 // numbers
-                match token {
-                    TokenType::None => {
-                        orderedlist_possible = true;
-                        text.push(*b as char);
-                    }
-                    _ => {
-                        text.push(*b as char);
-                    }
+                if TokenType::None == token {
+                    orderedlist_possible = true;
                 }
+                text.push(*b as char);
             }
             60 => {
                 // < Link beginning
@@ -218,15 +191,10 @@ pub fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
             */
             _ => {
                 // Letters
-                match token {
-                    TokenType::None => {
-                        token = TokenType::Paragraph;
-                        text.push(*b as char);
-                    }
-                    TokenType::Heading | TokenType::Paragraph | TokenType::UnorderedList | TokenType::OrderedList | TokenType::Code => {
-                        text.push(*b as char);
-                    }
+                if TokenType::None == token {
+                    token = TokenType::Paragraph;
                 }
+                text.push(*b as char);
             }
         }
 

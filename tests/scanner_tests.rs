@@ -66,8 +66,32 @@ mod tests {
     }
 
     #[test]
-    fn test_unorderedlist() {
+    fn test_unorderedlist_with_start() {
         let test_string = "* element\n\n";
+        let assert_string = "<ul>\n<li>element</li>\n</ul>\n\n";
+
+        let buffer = test_string.as_bytes().to_vec();
+        let token_list = scanner::scan_token(&buffer);
+        let output = htmlout::html_out(&token_list);
+
+        assert_eq!(output, assert_string);
+    }
+
+    #[test]
+    fn test_unorderedlist_with_plus() {
+        let test_string = "+ element\n\n";
+        let assert_string = "<ul>\n<li>element</li>\n</ul>\n\n";
+
+        let buffer = test_string.as_bytes().to_vec();
+        let token_list = scanner::scan_token(&buffer);
+        let output = htmlout::html_out(&token_list);
+
+        assert_eq!(output, assert_string);
+    }
+
+    #[test]
+    fn test_unorderedlist_with_minus() {
+        let test_string = "- element\n\n";
         let assert_string = "<ul>\n<li>element</li>\n</ul>\n\n";
 
         let buffer = test_string.as_bytes().to_vec();

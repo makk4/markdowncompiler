@@ -5,6 +5,9 @@ pub enum TokenType {
     None,
     Heading,
     Paragraph,
+    OrderedList,
+    UnorderedList,
+    Code,
     /*
     AlternativeHeadingOrText,
     Text,
@@ -22,9 +25,6 @@ pub enum TokenType {
     BlockquotesWithMultipleParagraphs,
     NestedBlockquote,
     BlockquotesWithOtherElements,
-    OrderedList,
-    UnorderedList,
-    Code,
     EscapingBacktick,
     CodeBlock,
     Link,
@@ -64,6 +64,12 @@ pub fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
     let mut text: String = "".to_string();
 
     let mut header_possible: bool = false;
+    let mut unorderedlist_possible: bool = false;
+    let mut orderedlist_possible: bool = false;
+    let mut code_possible: bool = false;
+
+    let mut spcae_count = 0u8;
+    let mut previous_char = '\n';
 
     IntoIterator::into_iter(buffer).for_each(|b| {
         match b {
@@ -85,6 +91,8 @@ pub fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
                 text = "".to_string();
                 sentence = Vec::new();
                 header_possible = false;
+                unorderedlist_possible = false;
+                orderedlist_possible = false;
             }
             32 => {
                 // Space
@@ -94,9 +102,35 @@ pub fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
                             token = TokenType::Heading;
                             text = "".to_string();
                         }
+                        else if unorderedlist_possible {
+                            token = TokenType::UnorderedList;
+                            text = "".to_string();
+                        }
+                        else if orderedlist_possible && previous_char == '.' {
+                            token = TokenType::OrderedList;
+                            text = "".to_string();
+                        }
+                        else if orderedlist_possible {
+                            orderedlist_possible = false;
+                            text.push(*b as char);
+                        }
+                        else if code_possible {
+                            spcae_count = spcae_count + 1;
+                            text = "".to_string();
+                        }
+                        else {
+                           code_possible = true;
+                           spcae_count = spcae_count + 1;
+                        }
+                        if spcae_count >= 8 {
+                            token = TokenType::Code;
+                            text = "".to_string();
+                        }
                     }
                     _ => {
-                        text.push(*b as char);
+                        if previous_char != '\n' {
+                            text.push(*b as char);
+                        }
                     }
                 }
             }
@@ -127,15 +161,44 @@ pub fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
             41 => {
                 // )
             }
+            */
             42 => {
-                // * Bold or Italics possible
+                // * Bold / Italics / List possible
+                match token {
+                    TokenType::None => {
+                        unorderedlist_possible = true;
+                        text.push(*b as char);
+                    }
+                    _ => {
+                        text.push(*b as char);
+                    }
+                } 
             }
+            /*
             45 => {
                 // - Alternative Heading level 2
+            }
+            */
+            46 => {
+                // .
+                text.push(*b as char);
+            }
+            48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 => {
+                // numbers
+                match token {
+                    TokenType::None => {
+                        orderedlist_possible = true;
+                        text.push(*b as char);
+                    }
+                    _ => {
+                        text.push(*b as char);
+                    }
+                }
             }
             60 => {
                 // < Link beginning
             }
+            /*
             61 => {
                 // = Possible Alternative Heading level 1
             }
@@ -159,11 +222,15 @@ pub fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
                         token = TokenType::Paragraph;
                         text.push(*b as char);
                     }
-                    TokenType::Heading | TokenType::Paragraph => {
+                    TokenType::Heading | TokenType::Paragraph | TokenType::UnorderedList | TokenType::OrderedList | TokenType::Code => {
                         text.push(*b as char);
                     }
                 }
             }
+        }
+
+        if !(previous_char == '\n' && *b as char == ' ') {
+            previous_char = *b as char;
         }
     });
 

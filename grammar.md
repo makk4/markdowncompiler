@@ -13,7 +13,7 @@ Legend:
 Body            :=  { Header | Paragraph | List | Code } .
 Header          :=  "#" { "#" } " " Sentence <NEWLINE> | 
                     Sentence <NEWLINE> ( "=" { "=" } | "-" { "-" } ) .
-Paragraph       :=  { ">" } Sentence ( <NEWLINE> | Linebreak ) .
+Paragraph       :=  { ">" } Sentence ( <NEWLINE> <NEWLINE> | Linebreak ) .
 Sentence        :=  { Emphasis | Text } .
 Emphasis        :=  Italic | Bold | "***" Text "***" | "___" Text "___" | 
                     "__*" Text "*__" | "**_" Text "_**" .
@@ -25,8 +25,8 @@ Image           :=  "!" "[" Letters "]" "(" Letters ")"
 Code            :=  ( "        " | <Tab> <Tab> ) Letters <NEWLINE> .
 Link            :=  "[" Letters "]" "(" Letters ")" | "<" Letters ">" .
 List            :=  UnorderedList | OrderedList
-UnorderedList   :=  ( "-" | "*" | "+" ) Text <NEWLINE> .
-OrderedList     :=  Number { Number } "." Text <NEWLINE> .
+UnorderedList   :=  ( "-" | "*" | "+" ) Text <NEWLINE> <NEWLINE> .
+OrderedList     :=  Number { Number } "." Text <NEWLINE> <NEWLINE> .
 HorizontalRule  :=  <NEWLINE> <NEWLINE> ( "***" { "*" } | "---" { "-" } |
                     "___" { "_" } ) .
 Escaping        :=  "\" .

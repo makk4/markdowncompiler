@@ -83,7 +83,6 @@ pub fn html_out(token_list: &LinkedList<Token>) -> String {
     return output;
 }
 
-
 fn get_sentence(texts: &Vec<Text>) -> String {
     let mut sentence ="".to_string();
 
@@ -92,8 +91,8 @@ fn get_sentence(texts: &Vec<Text>) -> String {
         let mut end: String = "".to_string();
 
         if text.italic {
-            start = format!("{}","<em>");
-            end = format!("{}","</em>");
+            start = "<em>".to_string();
+            end = "</em>".to_string();
         }
         if text.bold {
             start = format!("{}{}", start, "<strong>");

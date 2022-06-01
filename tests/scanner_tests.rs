@@ -54,6 +54,18 @@ mod tests {
     }
 
     #[test]
+    fn test_code() {
+        let test_string = "    var x = 3;\n        print(x);\n\n";
+        let assert_string = "<code>var x = 3;</code>\n<code>print(x);</code>\n\n";
+
+        let buffer = test_string.as_bytes().to_vec();
+        let token_list = scanner::scan_token(&buffer);
+        let output = htmlout::html_out(&token_list);
+
+        assert_eq!(output, assert_string);
+    }
+
+    #[test]
     fn test_unorderedlist() {
         let test_string = "* element\n\n";
         let assert_string = "<ul>\n<li>element</li>\n</ul>\n\n";

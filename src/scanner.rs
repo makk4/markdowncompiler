@@ -93,6 +93,7 @@ pub fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
                 header_possible = false;
                 unorderedlist_possible = false;
                 orderedlist_possible = false;
+                code_possible = false;
             }
             32 => {
                 // Space
@@ -122,7 +123,7 @@ pub fn scan_token(buffer: &Vec<u8>) -> LinkedList<Token> {
                            code_possible = true;
                            spcae_count = spcae_count + 1;
                         }
-                        if spcae_count >= 8 {
+                        if spcae_count >= 4 {
                             token = TokenType::Code;
                             text = "".to_string();
                         }
